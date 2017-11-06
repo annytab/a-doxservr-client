@@ -7,13 +7,14 @@
     <Company>A Name Not Yet Taken AB</Company>
     <Product>a-doxservr-client</Product>
     <NeutralLanguage>English</NeutralLanguage>
-    <PackageReleaseNotes>This is the first release.</PackageReleaseNotes>
+    <PackageReleaseNotes></PackageReleaseNotes>
     <Copyright>Copyright © 2017</Copyright>
     <PackageIconUrl>http://www.annytab.com/annytab_logo_512x512.png</PackageIconUrl>
     <PackageTags>ASP.NET, .NET, Core, C#, Doxservr, Api, Client</PackageTags>
     <Description>This is a client library for the Doxservr (www.doxservr.com) Api. This library can be used to connect to the Doxservr Api and to call api methods in the Doxservr Api.</Description>
     <PackageProjectUrl>https://github.com/annytab/a-doxservr-client</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/annytab/a-doxservr-client/blob/master/LICENSE</PackageLicenseUrl>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
