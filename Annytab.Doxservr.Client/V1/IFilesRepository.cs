@@ -15,7 +15,7 @@ namespace Annytab.Doxservr.Client.V1
         Task<Signature> Sign(HttpClient client, string id, string method, string date, string algorithm, string padding, string value = "", string certificate = "");
         Task<bool> MarkAsClosed(HttpClient client, string id);
         Task<FilesMetadata> GetList(HttpClient client, string ct = "", Int32 party_status = -1, Int32 file_status = -1, Int32 party_closed = -1, Int32 page_size = 10);
-        Task GetFile(HttpClient client, string id, Stream stream);
+        Task<bool> GetFile(HttpClient client, string id, Stream stream);
         Task<bool> Delete(HttpClient client, string id);
         HttpClient GetClient();
 

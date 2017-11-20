@@ -201,12 +201,13 @@ namespace TestProgram
         public async Task TestGetFile()
         {
             // Create a file stream
-            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\aaaTestApiClient.jpg"))
+            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\000001.json"))
             {
                 // Get the file
-                await this.file_repository.GetFile(this.client, "9bccb95f-a6e9-49d4-adff-4a666666fd9d", fileStream);
+                bool success = await this.file_repository.GetFile(this.client, "703a9717-ea9f-4484-add5-0a97d6576dd6", fileStream);
 
                 // Test evaluation
+                Assert.AreEqual(true, success);
                 Assert.AreNotEqual(0, fileStream.Length);
             }
 

@@ -7,7 +7,7 @@
     <Company>A Name Not Yet Taken AB</Company>
     <Product>a-doxservr-client</Product>
     <NeutralLanguage>English</NeutralLanguage>
-    <PackageReleaseNotes></PackageReleaseNotes>
+    <PackageReleaseNotes>The GetFile method now returns a boolean that indicates if the file was downloaded.</PackageReleaseNotes>
     <Copyright>Copyright © 2017</Copyright>
     <PackageIconUrl>http://www.annytab.com/annytab_logo_512x512.png</PackageIconUrl>
     <PackageTags>ASP.NET, .NET, Core, C#, Doxservr, Api, Client</PackageTags>

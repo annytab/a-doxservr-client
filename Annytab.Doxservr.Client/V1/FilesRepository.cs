@@ -301,8 +301,12 @@ namespace Annytab.Doxservr.Client.V1
         /// <param name="client">A reference to a http client.</param>
         /// <param name="id">The identity of the file you want to download.</param>
         /// <param name="stream">A reference to a stream, the response stream will be copied to this stream.</param>
-        public async Task GetFile(HttpClient client, string id, Stream stream)
+        /// <returns>A boolean that indicates if the file was downloaded.</returns>
+        public async Task<bool> GetFile(HttpClient client, string id, Stream stream)
         {
+            // Create the variable to return
+            bool success = false;
+
             // Get the response
             HttpResponseMessage response = await client.GetAsync($"get_file/{id}", HttpCompletionOption.ResponseHeadersRead);
 
@@ -317,6 +321,9 @@ namespace Annytab.Doxservr.Client.V1
 
                 // Get the stream
                 await response.Content.CopyToAsync(stream);
+
+                // Set output variables
+                success = true;
             }
             else
             {
@@ -326,6 +333,9 @@ namespace Annytab.Doxservr.Client.V1
                 // Log the error
                 this.logger.LogError(data);
             }
+
+            // Return the success boolean
+            return success;
 
         } // End of the GetFile method
 
