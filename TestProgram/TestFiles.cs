@@ -107,7 +107,7 @@ namespace TestProgram
             Signature post = null;
 
             // Sign the file
-            post = await this.file_repository.Sign(this.client, "9bccb95f-a6e9-49d4-adff-4a666666fd9d", "1", "2017-11-01", "SHA-1", "Pkcs1");
+            post = await this.file_repository.Sign(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31", "1", "2017-11-01", "SHA-1", "Pkcs1");
 
             // Test evaluation
             Assert.AreNotEqual(null, post);
@@ -168,7 +168,7 @@ namespace TestProgram
             }
 
             // Sign the file
-            post = await this.file_repository.Sign(this.client, "9bccb95f-a6e9-49d4-adff-4a666666fd9d", "0", "2017-11-01", post.algorithm, post.padding, post.value, post.certificate);
+            post = await this.file_repository.Sign(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31", "0", "2017-11-01", post.algorithm, post.padding, post.value, post.certificate);
 
             // Test evaluation
             Assert.AreNotEqual(null, post);
@@ -179,7 +179,7 @@ namespace TestProgram
         public async Task TestMarkAsClosed()
         {
             // Create an invoice
-            bool success = await this.file_repository.MarkAsClosed(this.client, "9bccb95f-a6e9-49d4-adff-4a666666fd9d");
+            bool success = await this.file_repository.MarkAsClosed(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31");
 
             // Test evaluation
             Assert.AreEqual(true, success);
@@ -201,10 +201,10 @@ namespace TestProgram
         public async Task TestGetFile()
         {
             // Create a file stream
-            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\000001.json"))
+            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\000001.jpg"))
             {
                 // Get the file
-                bool success = await this.file_repository.GetFile(this.client, "703a9717-ea9f-4484-add5-0a97d6576dd6", fileStream);
+                bool success = await this.file_repository.GetFile(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31", fileStream);
 
                 // Test evaluation
                 Assert.AreEqual(true, success);
@@ -217,7 +217,7 @@ namespace TestProgram
         public async Task TestDelete()
         {
             // Create an invoice
-            bool success = await this.file_repository.Delete(this.client, "9bccb95f-a6e9-49d4-adff-4a666666fd9d");
+            bool success = await this.file_repository.Delete(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31");
 
             // Test evaluation
             Assert.AreEqual(true, success);

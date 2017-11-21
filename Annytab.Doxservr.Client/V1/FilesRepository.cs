@@ -69,26 +69,34 @@ namespace Annytab.Doxservr.Client.V1
                 content.Add(new StringContent(status), "status");
                 content.Add(new StreamContent(stream), "file", filename);
 
-                // Get the response
-                HttpResponseMessage response = await client.PostAsync("send", content);
-
-                // Check the status code for the response
-                if (response.IsSuccessStatusCode == true)
+                try
                 {
-                    // Get the data
-                    string data = await response.Content.ReadAsStringAsync();
+                    // Get the response
+                    HttpResponseMessage response = await client.PostAsync("send", content);
 
-                    // Deserialize the content to metadata
-                    post = JsonConvert.DeserializeObject<FileMetadata>(data);
+                    // Check the status code for the response
+                    if (response.IsSuccessStatusCode == true)
+                    {
+                        // Get the data
+                        string data = await response.Content.ReadAsStringAsync();
+
+                        // Deserialize the content to metadata
+                        post = JsonConvert.DeserializeObject<FileMetadata>(data);
+                    }
+                    else
+                    {
+                        // Get string data
+                        string data = await response.Content.ReadAsStringAsync();
+
+                        // Log the error
+                        this.logger.LogError(data);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Get string data
-                    string data = await response.Content.ReadAsStringAsync();
-
-                    // Log the error
-                    this.logger.LogError(data);
-                }
+                    // Log the exception
+                    this.logger.LogError(ex, $"Send: {filename}", null);
+                } 
             }
 
             // Return the post
@@ -107,22 +115,30 @@ namespace Annytab.Doxservr.Client.V1
             // Create the variable to return
             bool success = false;
 
-            // Get the response
-            HttpResponseMessage response = await client.GetAsync($"create_invoice?gib={gib}");
-
-            // Check the status code for the response
-            if (response.IsSuccessStatusCode == true)
+            try
             {
-                // Set output variables
-                success = true;
+                // Get the response
+                HttpResponseMessage response = await client.GetAsync($"create_invoice?gib={gib}");
+
+                // Check the status code for the response
+                if (response.IsSuccessStatusCode == true)
+                {
+                    // Set output variables
+                    success = true;
+                }
+                else
+                {
+                    // Get string data
+                    string data = await response.Content.ReadAsStringAsync();
+
+                    // Log the error
+                    this.logger.LogError(data);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Get string data
-                string data = await response.Content.ReadAsStringAsync();
-
-                // Log the error
-                this.logger.LogError(data);
+                // Log the exception
+                this.logger.LogError(ex, $"CreateInvoice: {gib} GiB", null);
             }
 
             // Return the success boolean
@@ -163,25 +179,33 @@ namespace Annytab.Doxservr.Client.V1
                 content.Add(new StringContent(value), "signature_value");
                 content.Add(new StringContent(certificate), "signature_certificate");
 
-                // Get the response
-                HttpResponseMessage response = await client.PostAsync($"sign", content);
-
-                // Check the status code for the response
-                if (response.IsSuccessStatusCode == true)
+                try
                 {
-                    // Get the data
-                    string data = await response.Content.ReadAsStringAsync();
+                    // Get the response
+                    HttpResponseMessage response = await client.PostAsync($"sign", content);
 
-                    // Deserialize the content to a signature modell
-                    post = JsonConvert.DeserializeObject<Signature>(data);
+                    // Check the status code for the response
+                    if (response.IsSuccessStatusCode == true)
+                    {
+                        // Get the data
+                        string data = await response.Content.ReadAsStringAsync();
+
+                        // Deserialize the content to a signature modell
+                        post = JsonConvert.DeserializeObject<Signature>(data);
+                    }
+                    else
+                    {
+                        // Get string data
+                        string data = await response.Content.ReadAsStringAsync();
+
+                        // Log the error
+                        this.logger.LogError(data);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
-                    // Get string data
-                    string data = await response.Content.ReadAsStringAsync();
-
-                    // Log the error
-                    this.logger.LogError(data);
+                    // Log the exception
+                    this.logger.LogError(ex, $"Sign: {id}", null);
                 }
             }
 
@@ -201,22 +225,30 @@ namespace Annytab.Doxservr.Client.V1
             // Create the variable to return
             bool success = false;
 
-            // Get the response
-            HttpResponseMessage response = await client.GetAsync($"mark_as_closed/{id}");
-
-            // Check the status code for the response
-            if (response.IsSuccessStatusCode == true)
+            try
             {
-                // Set output variables
-                success = true;
+                // Get the response
+                HttpResponseMessage response = await client.GetAsync($"mark_as_closed/{id}");
+
+                // Check the status code for the response
+                if (response.IsSuccessStatusCode == true)
+                {
+                    // Set output variables
+                    success = true;
+                }
+                else
+                {
+                    // Get string data
+                    string data = await response.Content.ReadAsStringAsync();
+
+                    // Log the error
+                    this.logger.LogError(data);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Get string data
-                string data = await response.Content.ReadAsStringAsync();
-
-                // Log the error
-                this.logger.LogError(data);
+                // Log the exception
+                this.logger.LogError(ex, $"MarkAsClosed: {id}", null);
             }
 
             // Return the success boolean
@@ -257,36 +289,44 @@ namespace Annytab.Doxservr.Client.V1
                 content.Add(new StringContent(page_size.ToString()), "page_size");
                 content.Add(new StringContent(ct), "continuation");
 
-                // Get the response
-                HttpResponseMessage response = await client.PostAsync($"get_list", content);
-
-                // Check the status code for the response
-                if (response.IsSuccessStatusCode == true)
+                try
                 {
-                    // Try to get the continuation token
-                    IEnumerable<string> values = null;
-                    if (response.Headers.TryGetValues("Continuation", out values) == true)
+                    // Get the response
+                    HttpResponseMessage response = await client.PostAsync($"get_list", content);
+
+                    // Check the status code for the response
+                    if (response.IsSuccessStatusCode == true)
                     {
-                        foreach (string entry in values)
+                        // Try to get the continuation token
+                        IEnumerable<string> values = null;
+                        if (response.Headers.TryGetValues("Continuation", out values) == true)
                         {
-                            tuple.ct = entry.ToString();
-                            break;
+                            foreach (string entry in values)
+                            {
+                                tuple.ct = entry.ToString();
+                                break;
+                            }
                         }
+
+                        // Get string data
+                        string data = await response.Content.ReadAsStringAsync();
+
+                        // Deserialize the content to a list with file metadata posts
+                        tuple.posts = JsonConvert.DeserializeObject<IList<FileMetadata>>(data);
                     }
+                    else
+                    {
+                        // Get string data
+                        string data = await response.Content.ReadAsStringAsync();
 
-                    // Get string data
-                    string data = await response.Content.ReadAsStringAsync();
-
-                    // Deserialize the content to a list with file metadata posts
-                    tuple.posts = JsonConvert.DeserializeObject<IList<FileMetadata>>(data);
+                        // Log the error
+                        this.logger.LogError(data);
+                    }
                 }
-                else
-                {
-                    // Get string data
-                    string data = await response.Content.ReadAsStringAsync();
-
-                    // Log the error
-                    this.logger.LogError(data);
+                catch (Exception ex)
+                { 
+                    // Log the exception
+                    this.logger.LogError(ex, "GetList", null);
                 }
             }
 
@@ -307,31 +347,39 @@ namespace Annytab.Doxservr.Client.V1
             // Create the variable to return
             bool success = false;
 
-            // Get the response
-            HttpResponseMessage response = await client.GetAsync($"get_file/{id}", HttpCompletionOption.ResponseHeadersRead);
-
-            // Check the status code for the response
-            if (response.IsSuccessStatusCode == true)
+            try
             {
-                // Get header values
-                ContentDispositionHeaderValue disposition = response.Content.Headers.ContentDisposition;
-                MediaTypeHeaderValue contentType = response.Content.Headers.ContentType;
-                long? contentLength = response.Content.Headers.ContentLength;
-                byte[] contentMD5 = response.Content.Headers.ContentMD5;
+                // Get the response
+                HttpResponseMessage response = await client.GetAsync($"get_file/{id}", HttpCompletionOption.ResponseHeadersRead);
 
-                // Get the stream
-                await response.Content.CopyToAsync(stream);
+                // Check the status code for the response
+                if (response.IsSuccessStatusCode == true)
+                {
+                    // Get header values
+                    ContentDispositionHeaderValue disposition = response.Content.Headers.ContentDisposition;
+                    MediaTypeHeaderValue contentType = response.Content.Headers.ContentType;
+                    long? contentLength = response.Content.Headers.ContentLength;
+                    byte[] contentMD5 = response.Content.Headers.ContentMD5;
 
-                // Set output variables
-                success = true;
+                    // Get the stream
+                    await response.Content.CopyToAsync(stream);
+
+                    // Set output variables
+                    success = true;
+                }
+                else
+                {
+                    // Get string data
+                    string data = await response.Content.ReadAsStringAsync();
+
+                    // Log the error
+                    this.logger.LogError(data);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Get string data
-                string data = await response.Content.ReadAsStringAsync();
-
-                // Log the error
-                this.logger.LogError(data);
+                // Log the exception
+                this.logger.LogError(ex, $"GetFile: {id}", null);
             }
 
             // Return the success boolean
@@ -354,22 +402,30 @@ namespace Annytab.Doxservr.Client.V1
             // Create the variable to return
             bool success = false;
 
-            // Get the response
-            HttpResponseMessage response = await client.DeleteAsync($"delete/{id}");
-
-            // Check the status code for the response
-            if (response.IsSuccessStatusCode == true)
+            try
             {
-                // Set output variables
-                success = true;
+                // Get the response
+                HttpResponseMessage response = await client.DeleteAsync($"delete/{id}");
+
+                // Check the status code for the response
+                if (response.IsSuccessStatusCode == true)
+                {
+                    // Set output variables
+                    success = true;
+                }
+                else
+                {
+                    // Get string data
+                    string data = await response.Content.ReadAsStringAsync();
+
+                    // Log the error
+                    this.logger.LogError(data);
+                }
             }
-            else
+            catch (Exception ex)
             {
-                // Get string data
-                string data = await response.Content.ReadAsStringAsync();
-
-                // Log the error
-                this.logger.LogError(data);
+                // Log the exception
+                this.logger.LogError(ex, $"Delete: {id}", null);
             }
 
             // Return the success boolean
