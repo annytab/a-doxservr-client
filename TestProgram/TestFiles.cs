@@ -93,7 +93,7 @@ namespace TestProgram
         public async Task TestCreateInvoice()
         {
             // Create an invoice
-            bool success = await this.file_repository.CreateInvoice(this.client, 1);
+            bool success = await this.file_repository.CreateInvoice(this.client, 1, 11957869896);
 
             // Test evaluation
             Assert.AreEqual(true, success);

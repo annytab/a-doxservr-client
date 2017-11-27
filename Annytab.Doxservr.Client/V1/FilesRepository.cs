@@ -89,13 +89,13 @@ namespace Annytab.Doxservr.Client.V1
                         string data = await response.Content.ReadAsStringAsync();
 
                         // Log the error
-                        this.logger.LogError(data);
+                        this.logger.LogError($"Send: {filename}. {data}");
                     }
                 }
                 catch (Exception ex)
                 {
                     // Log the exception
-                    this.logger.LogError(ex, $"Send: {filename}", null);
+                    this.logger.LogError(ex, $"Send: {filename}.", null);
                 } 
             }
 
@@ -109,8 +109,9 @@ namespace Annytab.Doxservr.Client.V1
         /// </summary>
         /// <param name="client">A reference to a client</param>
         /// <param name="gib">The number of gibibytes to refill your account with.</param>
-        /// <returns>A boolean that indicates if the invoice was created</returns>
-        public async Task<bool> CreateInvoice(HttpClient client, Int64 gib)
+        /// <param name="iblt">The amount of bytes that your account balance must be less than in order for an invoice to be created.</param>
+        /// <returns>A boolean that indicates if the response was successful</returns>
+        public async Task<bool> CreateInvoice(HttpClient client, Int64 gib, Int64? iblt = null)
         {
             // Create the variable to return
             bool success = false;
@@ -118,11 +119,17 @@ namespace Annytab.Doxservr.Client.V1
             try
             {
                 // Get the response
-                HttpResponseMessage response = await client.GetAsync($"create_invoice?gib={gib}");
+                HttpResponseMessage response = await client.GetAsync($"create_invoice?gib={gib}&iblt={iblt}");
 
                 // Check the status code for the response
                 if (response.IsSuccessStatusCode == true)
                 {
+                    // Get string data
+                    string data = await response.Content.ReadAsStringAsync();
+
+                    // Log information
+                    this.logger.LogInformation($"CreateInvoice: {gib} GiB. {data}");
+
                     // Set output variables
                     success = true;
                 }
@@ -132,13 +139,13 @@ namespace Annytab.Doxservr.Client.V1
                     string data = await response.Content.ReadAsStringAsync();
 
                     // Log the error
-                    this.logger.LogError(data);
+                    this.logger.LogError($"CreateInvoice: {gib} GiB. {data}");
                 }
             }
             catch (Exception ex)
             {
                 // Log the exception
-                this.logger.LogError(ex, $"CreateInvoice: {gib} GiB", null);
+                this.logger.LogError(ex, $"CreateInvoice: {gib} GiB.", null);
             }
 
             // Return the success boolean
@@ -161,7 +168,7 @@ namespace Annytab.Doxservr.Client.V1
         /// <param name="padding">The type of padding applied to the signature (Pkcs1 or Pss). Must be stated.</param>
         /// <param name="value">The hash of the signature encoded as a Base64 string, no BEGIN or END headers should be specified. Must be specified if signature method 0 is applied.</param>
         /// <param name="certificate">Your public certificate encoded as a Base64 string, no BEGIN or END headers should be specified. Must be specified if signature method 0 is applied.</param>
-        /// <returns></returns>
+        /// <returns>The created signature as a signature modell</returns>
         public async Task<Signature> Sign(HttpClient client, string id, string method, string date, string algorithm, string padding, string value = "", string certificate = "")
         {
             // Create a post
@@ -199,13 +206,13 @@ namespace Annytab.Doxservr.Client.V1
                         string data = await response.Content.ReadAsStringAsync();
 
                         // Log the error
-                        this.logger.LogError(data);
+                        this.logger.LogError($"Sign: {id}. {data}");
                     }
                 }
                 catch (Exception ex)
                 {
                     // Log the exception
-                    this.logger.LogError(ex, $"Sign: {id}", null);
+                    this.logger.LogError(ex, $"Sign: {id}.", null);
                 }
             }
 
@@ -242,13 +249,13 @@ namespace Annytab.Doxservr.Client.V1
                     string data = await response.Content.ReadAsStringAsync();
 
                     // Log the error
-                    this.logger.LogError(data);
+                    this.logger.LogError($"MarkAsClosed: {id}. {data}");
                 }
             }
             catch (Exception ex)
             {
                 // Log the exception
-                this.logger.LogError(ex, $"MarkAsClosed: {id}", null);
+                this.logger.LogError(ex, $"MarkAsClosed: {id}.", null);
             }
 
             // Return the success boolean
@@ -320,13 +327,13 @@ namespace Annytab.Doxservr.Client.V1
                         string data = await response.Content.ReadAsStringAsync();
 
                         // Log the error
-                        this.logger.LogError(data);
+                        this.logger.LogError($"GetList. {data}");
                     }
                 }
                 catch (Exception ex)
                 { 
                     // Log the exception
-                    this.logger.LogError(ex, "GetList", null);
+                    this.logger.LogError(ex, "GetList.", null);
                 }
             }
 
@@ -373,13 +380,13 @@ namespace Annytab.Doxservr.Client.V1
                     string data = await response.Content.ReadAsStringAsync();
 
                     // Log the error
-                    this.logger.LogError(data);
+                    this.logger.LogError($"GetFile: {id}. {data}");
                 }
             }
             catch (Exception ex)
             {
                 // Log the exception
-                this.logger.LogError(ex, $"GetFile: {id}", null);
+                this.logger.LogError(ex, $"GetFile: {id}.", null);
             }
 
             // Return the success boolean
@@ -419,13 +426,13 @@ namespace Annytab.Doxservr.Client.V1
                     string data = await response.Content.ReadAsStringAsync();
 
                     // Log the error
-                    this.logger.LogError(data);
+                    this.logger.LogError($"Delete: {id}. {data}");
                 }
             }
             catch (Exception ex)
             {
                 // Log the exception
-                this.logger.LogError(ex, $"Delete: {id}", null);
+                this.logger.LogError(ex, $"Delete: {id}.", null);
             }
 
             // Return the success boolean
