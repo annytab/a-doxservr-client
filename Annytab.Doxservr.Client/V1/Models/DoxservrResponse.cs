@@ -1,36 +1,29 @@
-﻿using System;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace Annytab.Doxservr.Client.V1
 {
     /// <summary>
-    /// This class represent a document party
+    /// This class represent a response with a model and other properties
     /// </summary>
-    public class Party
+    public class DoxservrResponse<T>
     {
         #region Variables
 
-        public string email { get; set; }
-        public Int32 is_sender { get; set; }
-        public Int32 status { get; set; }
-        public Int32 closed { get; set; }
-        public Signature signature { get; set; }
-        
+        public T model { get; set; }
+        public string error { get; set; }
+
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Create a new post with default properties
+        /// Create a new post
         /// </summary>
-        public Party()
+        public DoxservrResponse()
         {
             // Set values for instance variables
-            this.email = "";
-            this.is_sender = 0; 
-            this.status = 0;
-            this.closed = 0;
-            this.signature = null;
+            this.model = default(T);
+            this.error = null;
 
         } // End of the constructor
 

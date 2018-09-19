@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Text;
-using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
@@ -14,13 +13,13 @@ using Annytab.Doxservr.Client.V1;
 namespace TestProgram
 {
     [TestClass]
-    public class TestFiles : IDisposable
+    public class TestFilesClient
     {
         #region Variables
 
         private IConfigurationRoot configuration { get; set; }
-        private IFilesRepository file_repository { get; set; }
-        private HttpClient client { get; set; }
+        private IDoxservrFilesClient dox_client { get; set; }
+        private ILogger logger { get; set; }
 
         #endregion
 
@@ -29,8 +28,9 @@ namespace TestProgram
         /// <summary>
         /// Create a new test instance
         /// </summary>
-        public TestFiles()
+        public TestFilesClient()
         {
+            // Add configuration settings
             ConfigurationBuilder builder = new ConfigurationBuilder();
             builder.SetBasePath(Directory.GetCurrentDirectory());
             builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
@@ -48,7 +48,7 @@ namespace TestProgram
             services.Configure<DoxservrOptions>(configuration.GetSection("DoxservrOptions"));
 
             // Add repositories
-            services.AddScoped<IFilesRepository, FilesRepository>();
+            services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>();
 
             // Build a service provider
             IServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -59,9 +59,9 @@ namespace TestProgram
             loggerFactory.AddDebug();
             loggerFactory.AddFile("Logs/test-{Date}.txt");
 
-            // Get a reference to the file repository and a client
-            this.file_repository = serviceProvider.GetService<IFilesRepository>();
-            this.client = this.file_repository.GetClient();
+            // Get references
+            this.logger = loggerFactory.CreateLogger<IDoxservrFilesClient>();
+            this.dox_client = serviceProvider.GetService<IDoxservrFilesClient>();
 
         } // End of the constructor
 
@@ -73,44 +73,38 @@ namespace TestProgram
         [TestMethod]
         public async Task TestSend()
         {
-            // Create a file metadata post
-            FileMetadata post = null;
-
-            // Set the file path
-            string path = "D:\\Bilder\\1960.jpg";
-
-            using (FileStream stream = File.OpenRead(path))
+            // Use a file stream
+            using (FileStream stream = File.OpenRead("D:\\Bilder\\1960.jpg"))
             {
-                post = await this.file_repository.Send(this.client, stream, "fredde@jfsbokforing.se,info@bokforingstips.se", "1960.jpg");
-            }
+                // Send a file
+                DoxservrResponse<FileDocument> dr = await this.dox_client.Send(stream, "fredde@jfsbokforing.se,info@bokforingstips.se", "1960.jpg");
 
-            // Test evaluation
-            Assert.AreNotEqual(null, post);
+                // Log the error
+                if (dr.model == null)
+                {
+                    this.logger.LogError(dr.error);
+                }
+
+                // Test evaluation
+                Assert.AreNotEqual(null, dr.model);
+            }
 
         } // End of the TestSend method
 
         [TestMethod]
-        public async Task TestCreateInvoice()
-        {
-            // Create an invoice
-            bool success = await this.file_repository.CreateInvoice(this.client, 1, 11957869896);
-
-            // Test evaluation
-            Assert.AreEqual(true, success);
-
-        } // End of the TestCreateInvoice method
-
-        [TestMethod]
         public async Task TestSignWithDoxCertificate()
         {
-            // Create a reference to a signature
-            Signature post = null;
+            // Sign a file
+            DoxservrResponse<Signature> dr = await this.dox_client.Sign("c44e1589-63e1-41eb-bcbf-44ee5bff4aff", "1", "2018-09-19", "SHA-1", "Pkcs1");
 
-            // Sign the file
-            post = await this.file_repository.Sign(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31", "1", "2017-11-01", "SHA-1", "Pkcs1");
+            // Log the error
+            if (dr.model == null)
+            {
+                this.logger.LogError(dr.error);
+            }
 
             // Test evaluation
-            Assert.AreNotEqual(null, post);
+            Assert.AreNotEqual(null, dr.model);
 
         } // End of the TestSignWithDoxCertificate method
 
@@ -122,7 +116,7 @@ namespace TestProgram
             {
                 algorithm = "SHA-256",
                 padding = "Pkcs1",
-                data = "dox@annytab.se,2017-11-01,XOLMHnuGXoGVl/hI1+5kLA==",
+                data = "dox@annytab.se,2018-09-19,XOLMHnuGXoGVl/hI1+5kLA==",
                 value = "",
                 certificate = ""
             };
@@ -167,48 +161,88 @@ namespace TestProgram
                 }
             }
 
-            // Sign the file
-            post = await this.file_repository.Sign(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31", "0", "2017-11-01", post.algorithm, post.padding, post.value, post.certificate);
+            // Sign a file
+            DoxservrResponse<Signature> dr = await this.dox_client.Sign("c44e1589-63e1-41eb-bcbf-44ee5bff4aff", "0", "2018-09-19", post.algorithm, post.padding, post.value, post.certificate);
+
+            // Log the error
+            if (dr.model == null)
+            {
+                this.logger.LogError(dr.error);
+            }
 
             // Test evaluation
-            Assert.AreNotEqual(null, post);
+            Assert.AreNotEqual(null, dr.model);
 
         } // End of the TestSignWithOwnCertificate method
 
         [TestMethod]
         public async Task TestMarkAsClosed()
         {
-            // Create an invoice
-            bool success = await this.file_repository.MarkAsClosed(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31");
+            // Mark a file as closed
+            DoxservrResponse<bool> dr = await this.dox_client.MarkAsClosed("c44e1589-63e1-41eb-bcbf-44ee5bff4aff");
+
+            // Log the error
+            if (dr.model == false)
+            {
+                this.logger.LogError(dr.error);
+            }
 
             // Test evaluation
-            Assert.AreEqual(true, success);
+            Assert.AreNotEqual(false, dr.model);
 
         } // End of the TestMarkAsClosed method
 
         [TestMethod]
-        public async Task TestGetList()
+        public async Task TestResetStatus()
         {
-            // Get a list
-            FilesMetadata tuple = await this.file_repository.GetList(this.client);
+            // Mark a file as closed
+            DoxservrResponse<bool> dr = await this.dox_client.ResetStatus("c44e1589-63e1-41eb-bcbf-44ee5bff4aff");
+
+            // Log the error
+            if (dr.model == false)
+            {
+                this.logger.LogError(dr.error);
+            }
 
             // Test evaluation
-            Assert.AreNotEqual(0, tuple.posts.Count);
+            Assert.AreNotEqual(false, dr.model);
 
-        } // End of the TestGetList method
+        } // End of the TestMarkAsClosed method
+
+        [TestMethod]
+        public async Task TestGetPage()
+        {
+            // Get a page
+            DoxservrResponse<FileDocuments> dr = await this.dox_client.GetPage("", -1, -1, -1, 2);
+
+            // Log the error
+            if (dr.model == null)
+            {
+                this.logger.LogError(dr.error);
+            }
+
+            // Test evaluation
+            Assert.AreNotEqual(null, dr.model);
+
+        } // End of the TestGetPage method
 
         [TestMethod]
         public async Task TestGetFile()
         {
-            // Create a file stream
-            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\000001.jpg"))
+            // Use a file stream
+            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\dox-car-01.jpg"))
             {
                 // Get the file
-                bool success = await this.file_repository.GetFile(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31", fileStream);
+                DoxservrResponse<bool> dr = await this.dox_client.GetFile("c44e1589-63e1-41eb-bcbf-44ee5bff4aff", fileStream);
+
+                // Log the error
+                if (dr.model == false)
+                {
+                    this.logger.LogError(dr.error);
+                }
 
                 // Test evaluation
-                Assert.AreEqual(true, success);
-                Assert.AreNotEqual(0, fileStream.Length);
+                Assert.AreNotEqual(false, dr.model);
             }
 
         } // End of the TestGetFile method
@@ -216,46 +250,19 @@ namespace TestProgram
         [TestMethod]
         public async Task TestDelete()
         {
-            // Create an invoice
-            bool success = await this.file_repository.Delete(this.client, "5619ea8c-0057-4a9b-8e64-ca1eacb9db31");
+            // Delete a file
+            DoxservrResponse<bool> dr = await this.dox_client.Delete("c44e1589-63e1-41eb-bcbf-44ee5bff4aff");
 
-            // Test evaluation
-            Assert.AreEqual(true, success);
-
-        } // End of the TestDelete method
-
-        #region IDisposable Support
-
-        // To detect redundant calls
-        private bool disposedValue = false; 
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
+            // Log the error
+            if (dr.model == false)
             {
-                if (disposing)
-                {
-                    // Dispose of the client
-                    if(this.client != null)
-                    {
-                        this.client.Dispose();
-                    }
-                }
-
-                disposedValue = true;
+                this.logger.LogError(dr.error);
             }
 
-        } // End of the Dispose method
+            // Test evaluation
+            Assert.AreNotEqual(false, dr.model);
 
-        // This code added to correctly implement the disposable pattern.
-        public void Dispose()
-        {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
-
-        } // End of the Dispose method
-
-        #endregion
+        } // End of the TestDelete method
 
     } // End of the class
 

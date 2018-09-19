@@ -5,14 +5,15 @@ using Newtonsoft.Json;
 namespace Annytab.Doxservr.Client.V1
 {
     /// <summary>
-    /// This class includes a list with file metadata posts and a continuation token
+    /// This class includes a page with file metadata items
     /// </summary>
-    public class FilesMetadata
+    public class FileDocuments
     {
         #region Variables
 
-        public IList<FileMetadata> posts { get; set; }
+        public IList<FileDocument> items { get; set; }
         public string ct { get; set; }
+        public bool error { get; set; }
 
         #endregion
 
@@ -21,22 +22,36 @@ namespace Annytab.Doxservr.Client.V1
         /// <summary>
         /// Create a new post
         /// </summary>
-        public FilesMetadata()
+        public FileDocuments()
         {
             // Set values for instance variables
-            this.posts = new List<FileMetadata>();
+            this.items = new List<FileDocument>();
             this.ct = "";
+            this.error = false;
 
         } // End of the constructor
+
+        #endregion
+
+        #region Get methods
+
+        /// <summary>
+        /// Convert the object to a json string
+        /// </summary>
+        public override string ToString()
+        {
+            return JsonConvert.SerializeObject(this);
+
+        } // End of the ToString method
 
         #endregion
 
     } // End of the class
 
     /// <summary>
-    /// This class represent a file metadata post
+    /// This class represent a file document post
     /// </summary>
-    public class FileMetadata
+    public class FileDocument
     {
         #region Variables
 
@@ -59,7 +74,7 @@ namespace Annytab.Doxservr.Client.V1
         /// <summary>
         /// Create a new post with default properties
         /// </summary>
-        public FileMetadata()
+        public FileDocument()
         {
             // Set values for instance variables
             this.id = Guid.NewGuid().ToString();
@@ -83,7 +98,6 @@ namespace Annytab.Doxservr.Client.V1
         /// <summary>
         /// Convert the object to a json string
         /// </summary>
-        /// <returns>A json formatted string</returns>
         public override string ToString()
         {
             return JsonConvert.SerializeObject(this);

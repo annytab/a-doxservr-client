@@ -5,7 +5,16 @@ If you want to test the client with the test program, add a appsettings.Developm
 
 This library is available as a NuGet package: <a href="https://www.nuget.org/packages/Annytab.Doxservr.Client/">a-doxservr-client (NuGet Gallery)</a>
 
-See the TestProgram (TestFiles.cs) for examples on how to use the client.
+You can add DoxservrAccountsClient and DoxservrFilesClient to IHttpClientFactory in ASP.NET Core 2.1. See the TestProgram for examples on how to use clients.
+
+```
+// Create api options
+services.Configure<DoxservrOptions>(configuration.GetSection("DoxservrOptions"));
+
+// Add repositories
+services.AddHttpClient<IDoxservrAccountsClient, DoxservrAccountsClient>();
+services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>();
+```
 
 Documentation (English): <a href="https://www.doxservr.com/home/api">Doxservr Api</a><br />
 Documentation (Swedish): <a href="https://www.doxservr.se/home/api">Doxservr Api</a>
