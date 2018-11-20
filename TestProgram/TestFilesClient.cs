@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
@@ -9,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Annytab.Doxservr.Client.V1;
+using System.Threading;
 
 namespace TestProgram
 {
@@ -19,7 +21,12 @@ namespace TestProgram
 
         private IConfigurationRoot configuration { get; set; }
         private IDoxservrFilesClient dox_client { get; set; }
+        private IAzureBlobsClient azure_client { get; set; }
         private ILogger logger { get; set; }
+
+        // Progress
+        private decimal progress { get; set; }
+        private Int64 file_size { get; set; }
 
         #endregion
 
@@ -46,9 +53,11 @@ namespace TestProgram
 
             // Create api options
             services.Configure<DoxservrOptions>(configuration.GetSection("DoxservrOptions"));
+            services.Configure<AzureBlobOptions>(configuration.GetSection("AzureBlobOptions"));
 
             // Add repositories
             services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>();
+            services.AddHttpClient<IAzureBlobsClient, AzureBlobsClient>();
 
             // Build a service provider
             IServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -62,6 +71,7 @@ namespace TestProgram
             // Get references
             this.logger = loggerFactory.CreateLogger<IDoxservrFilesClient>();
             this.dox_client = serviceProvider.GetService<IDoxservrFilesClient>();
+            this.azure_client = serviceProvider.GetService<IAzureBlobsClient>();
 
         } // End of the constructor
 
@@ -90,6 +100,81 @@ namespace TestProgram
             }
 
         } // End of the TestSend method
+
+        /// <summary>
+        /// Test to send a file
+        /// </summary>
+        [TestMethod]
+        public async Task TestSendWithBlocks()
+        {
+            // Add progress and cancellation
+            Progress<Int64> progress_indicator = new Progress<Int64>(ReportProgress);
+            CancellationTokenSource cts = new CancellationTokenSource();
+
+            // Set progress to 0
+            this.progress = 0;
+
+            // Use a file stream
+            using (FileStream stream = File.OpenRead("D:\\ImportantFiles\\IslandOfBlocks20131122.zip"))
+            {
+                // Get the file size
+                this.file_size = stream.Length;
+
+                // Get an upload url
+                DoxservrResponse<PutBlockData> dr_block = await this.dox_client.GetUploadUrl();
+
+                // Log the error
+                if (dr_block.model == null)
+                {
+                    this.logger.LogError(dr_block.error);
+                    Assert.Fail();
+                    return;
+                }
+
+                // Upload blocks
+                DoxservrResponse<BlockListData> dr_blocks = await this.azure_client.UploadBlocks(stream, dr_block.model, 1 * 1024 * 1024, progress_indicator);
+
+                //// Test to cancel request
+                //Task<DoxservrResponse<BlockListData>> task = this.azure_client.UploadBlocks(stream, dr_block.model, 4 * 1024 * 1024, progress_indicator, cts.Token);
+                //await Task.Delay(200);
+                //cts.Cancel();
+                //await task;
+                //DoxservrResponse<BlockListData> dr_blocks = task.Result;
+
+                this.logger.LogInformation("Finished uploading blocks!");
+
+                // Log the error
+                if (dr_blocks.model == null)
+                {
+                    this.logger.LogError(dr_blocks.error);
+                    Assert.Fail();
+                    return;
+                }
+
+                // Upload the block list
+                DoxservrResponse<FileDocument> dr_file = await this.dox_client.UploadBlockList(dr_blocks.model, "fredde@jfsbokforing.se,info@bokforingstips.se", "IslandOfBlocks20131122.zip", 
+                    "encoding", "standard", "sv", "0");
+
+                // Log the error
+                if (dr_file.model == null)
+                {
+                    this.logger.LogError(dr_file.error);
+                    Assert.Fail();
+                }
+            }
+
+        } // End of the TestSendWithBlocks method
+
+        /// <summary>
+        /// Report progress for block uploading
+        /// </summary>
+        public void ReportProgress(Int64 bytes_uploaded)
+        {
+            this.progress += bytes_uploaded;
+            decimal percent = Math.Round((this.progress / this.file_size) * 100.00M, 2, MidpointRounding.AwayFromZero);
+            this.logger.LogInformation(percent.ToString() + " %");
+
+        } // End of the ReportProgress method
 
         [TestMethod]
         public async Task TestSignWithDoxCertificate()
@@ -230,10 +315,10 @@ namespace TestProgram
         public async Task TestGetFile()
         {
             // Use a file stream
-            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\dox-car-01.jpg"))
+            using (FileStream fileStream = File.OpenWrite("D:\\Bilder\\001-islands.zip"))
             {
                 // Get the file
-                DoxservrResponse<bool> dr = await this.dox_client.GetFile("c44e1589-63e1-41eb-bcbf-44ee5bff4aff", fileStream);
+                DoxservrResponse<bool> dr = await this.dox_client.GetFile("5e1a8deb-39a0-4ba3-bbd6-0bdfefb1d0bb", fileStream);
 
                 // Log the error
                 if (dr.model == false)

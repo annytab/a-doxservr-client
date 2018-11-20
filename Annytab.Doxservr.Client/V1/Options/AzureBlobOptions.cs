@@ -3,15 +3,14 @@
 namespace Annytab.Doxservr.Client.V1
 {
     /// <summary>
-    /// This class represent doxservr options
+    /// This class represent azure blob options
     /// </summary>
-    public class DoxservrOptions
+    public class AzureBlobOptions
     {
         #region Variables
 
-        public string ApiHost { get; set; }
-        public string ApiEmail { get; set; }
-        public string ApiPassword { get; set; }
+        public Int32 DegreeOfParallelism { get; set; }
+        public Int32 MaxRetries  { get; set; }
         public Int32 TimeoutInSeconds { get; set; }
 
         #endregion
@@ -21,12 +20,11 @@ namespace Annytab.Doxservr.Client.V1
         /// <summary>
         /// Create a new post
         /// </summary>
-        public DoxservrOptions()
+        public AzureBlobOptions()
         {
             // Set values for instance variables
-            this.ApiHost = "";
-            this.ApiEmail = "";
-            this.ApiPassword = "";
+            this.DegreeOfParallelism = 1;
+            this.MaxRetries = 3;
             this.TimeoutInSeconds = 100;
 
         } // End of the constructor

@@ -43,6 +43,7 @@ namespace Annytab.Doxservr.Client.V1
             this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", this.options.ApiEmail, this.options.ApiPassword))));
             this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("*"));
+            this.client.Timeout = TimeSpan.FromSeconds(this.options.TimeoutInSeconds);
 
         } // End of the constructor
 

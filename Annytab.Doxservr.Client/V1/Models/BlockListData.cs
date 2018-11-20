@@ -1,20 +1,19 @@
-﻿using Newtonsoft.Json;
+﻿using System;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Annytab.Doxservr.Client.V1
 {
     /// <summary>
-    /// This class represent a signature
+    /// This class represent a block list data
     /// </summary>
-    public class Signature
+    public class BlockListData
     {
         #region Variables
 
-        public string validation_type { get; set; }
-        public string algorithm { get; set; }
-        public string padding { get; set; }
-        public string data { get; set; }
-        public string value { get; set; }
-        public string certificate { get; set; }
+        public string id { get; set; }
+        public string file_md5 { get; set; }
+        public IList<string> block_list { get; set; }
 
         #endregion
 
@@ -23,15 +22,12 @@ namespace Annytab.Doxservr.Client.V1
         /// <summary>
         /// Create a new post with default properties
         /// </summary>
-        public Signature()
+        public BlockListData()
         {
             // Set values for instance variables
-            this.validation_type = "";
-            this.algorithm = "";
-            this.padding = "";
-            this.data = "";
-            this.value = "";
-            this.certificate = "";
+            this.id = "";
+            this.file_md5 = "";
+            this.block_list = new List<string>();
 
         } // End of the constructor
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace Annytab.Doxservr.Client.V1
@@ -21,6 +22,19 @@ namespace Annytab.Doxservr.Client.V1
         /// <param name="status">Enter 0 if you want to require the file to be signed by all parties or 1 if the file not needs to be signed. If no value is specified, the status is set to 1.</param>
         /// <returns>A doxservr response with a file document</returns>
         Task<DoxservrResponse<FileDocument>> Send(Stream stream, string receivers, string filename, string encoding = "", string standard = "", string language = "", string status = "");
+
+        /// <summary>
+        /// Upload a block list and send a file to receivers
+        /// </summary>
+        /// <param name="data">A reference to block list data</param>
+        /// <param name="receivers">One or more email addresses to recipients. Each e-mail address should be delimited by comma (,).</param>
+        /// <param name="filename">A filename, the extension is used to set the mime-type of the file.</param>
+        /// <param name="encoding">You can specify how the text in the file has been encoded so that the recipient can convert the file to a string (ASCII, UTF-8, UTF-16 or UTF-32).</param>
+        /// <param name="standard">You can specify the name of the standard applied to create the file. This information is important if the recipient should be able to process the file.</param>
+        /// <param name="language">Enter a 2-letter language code according to ISO 639-1 that specifies the language used in the file. If no value is specified, the language code is set to en (English).</param>
+        /// <param name="status">Enter 0 if you want to require the file to be signed by all parties or 1 if the file not needs to be signed. If no value is specified, the status is set to 1.</param>
+        /// <returns>A doxservr response with a file document</returns>
+        Task<DoxservrResponse<FileDocument>> UploadBlockList(BlockListData data, string receivers, string filename, string encoding = "", string standard = "", string language = "", string status = "");
 
         /// <summary>
         /// Sign a file
@@ -48,6 +62,13 @@ namespace Annytab.Doxservr.Client.V1
         /// <param name="id">The identity of the file you want to mark as closed.</param>
         /// <returns>A doxservr response with a boolean that indicates if the status was reset.</returns>
         Task<DoxservrResponse<bool>> ResetStatus(string id);
+
+
+        /// <summary>
+        /// Get an url to upload blocks
+        /// </summary>
+        /// <returns>A reference to put block data</returns>
+        Task<DoxservrResponse<PutBlockData>> GetUploadUrl();
 
         /// <summary>
         /// Get a page with file documents

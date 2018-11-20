@@ -10,10 +10,34 @@ You can add DoxservrAccountsClient and DoxservrFilesClient to IHttpClientFactory
 ```
 // Create api options
 services.Configure<DoxservrOptions>(configuration.GetSection("DoxservrOptions"));
+services.Configure<AzureBlobOptions>(configuration.GetSection("AzureBlobOptions"));
 
 // Add repositories
 services.AddHttpClient<IDoxservrAccountsClient, DoxservrAccountsClient>();
 services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>();
+services.AddHttpClient<IAzureBlobsClient, AzureBlobsClient>();
+```
+
+You can also create clients with the constructor by adding a HttpClient and IOptions.
+
+```
+// Create api options
+IOptions<DoxservrOptions> dox_options = Options.Create<DoxservrOptions>(new DoxservrOptions
+{
+	ApiEmail = "demo@demo.se",
+	ApiHost = "https://www.doxservr.com",
+	ApiPassword = "my_password"
+});
+IOptions<AzureBlobOptions> azure_options = Options.Create<AzureBlobOptions>(new AzureBlobOptions
+{
+	DegreeOfParallelism = 4,
+	MaxRetries = 3
+});
+
+// Create clients
+IDoxservrAccountsClient accounts_client = new DoxservrAccountsClient(this.client_factory.CreateClient(), dox_options);
+IDoxservrFilesClient files_client = new DoxservrFilesClient(this.client_factory.CreateClient(), dox_options);
+IAzureBlobsClient azure_client = new AzureBlobsClient(this.client_factory.CreateClient(), azure_options);
 ```
 
 Documentation (English): <a href="https://www.doxservr.com/home/api">Doxservr Api</a><br />

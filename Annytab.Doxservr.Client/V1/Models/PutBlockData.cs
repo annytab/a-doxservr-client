@@ -3,35 +3,27 @@
 namespace Annytab.Doxservr.Client.V1
 {
     /// <summary>
-    /// This class represent a signature
+    /// This class represent put block data
     /// </summary>
-    public class Signature
+    public class PutBlockData
     {
         #region Variables
 
-        public string validation_type { get; set; }
-        public string algorithm { get; set; }
-        public string padding { get; set; }
-        public string data { get; set; }
-        public string value { get; set; }
-        public string certificate { get; set; }
+        public string id { get; set; }
+        public string url { get; set; }
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Create a new post with default properties
+        /// Create a new post
         /// </summary>
-        public Signature()
+        public PutBlockData()
         {
             // Set values for instance variables
-            this.validation_type = "";
-            this.algorithm = "";
-            this.padding = "";
-            this.data = "";
-            this.value = "";
-            this.certificate = "";
+            this.id = "";
+            this.url = "";
 
         } // End of the constructor
 

@@ -5,8 +5,11 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Threading;
 
 namespace Annytab.Doxservr.Client.V1
 {
@@ -27,22 +30,25 @@ namespace Annytab.Doxservr.Client.V1
         /// <summary>
         /// Create a new repository
         /// </summary>
-        public DoxservrFilesClient(HttpClient http_client, IOptions<DoxservrOptions> options)
+        public DoxservrFilesClient(HttpClient client, IOptions<DoxservrOptions> options)
         {
             // Set values for instance variables
-            this.client = http_client;
+            this.client = client;
             this.options = options.Value;
 
-            // Create a http client
+            // Create a handler
             HttpClientHandler handler = new HttpClientHandler
             {
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.None
             };
+
+            // Create a dox client
             this.client = new HttpClient(handler);
             this.client.BaseAddress = new Uri(this.options.ApiHost.TrimEnd('/') + "/api/v1/files/");
             this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", this.options.ApiEmail, this.options.ApiPassword))));
             this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
             this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("*"));
+            this.client.Timeout = TimeSpan.FromSeconds(this.options.TimeoutInSeconds);
 
         } // End of the constructor
 
@@ -111,6 +117,66 @@ namespace Annytab.Doxservr.Client.V1
             return dr;
 
         } // End of the Send method
+
+        /// <summary>
+        /// Upload a block list and send a file to receivers
+        /// </summary>
+        /// <param name="data">A reference to block list data</param>
+        /// <param name="receivers">One or more email addresses to recipients. Each e-mail address should be delimited by comma (,).</param>
+        /// <param name="filename">A filename, the extension is used to set the mime-type of the file.</param>
+        /// <param name="encoding">You can specify how the text in the file has been encoded so that the recipient can convert the file to a string (ASCII, UTF-8, UTF-16 or UTF-32).</param>
+        /// <param name="standard">You can specify the name of the standard applied to create the file. This information is important if the recipient should be able to process the file.</param>
+        /// <param name="language">Enter a 2-letter language code according to ISO 639-1 that specifies the language used in the file. If no value is specified, the language code is set to en (English).</param>
+        /// <param name="status">Enter 0 if you want to require the file to be signed by all parties or 1 if the file not needs to be signed. If no value is specified, the status is set to 1.</param>
+        /// <returns>A doxservr response with a file document</returns>
+        public async Task<DoxservrResponse<FileDocument>> UploadBlockList(BlockListData data, string receivers, string filename, 
+            string encoding = "", string standard = "", string language = "", string status = "")
+        {
+            // Create the response to return
+            DoxservrResponse<FileDocument> dr = new DoxservrResponse<FileDocument>();
+
+            // Send data as multipart/form-data content
+            using (MultipartFormDataContent content = new MultipartFormDataContent())
+            {
+                // Add content
+                content.Add(new StringContent(data.id), "id");
+                content.Add(new StringContent(receivers), "receivers");
+                content.Add(new StringContent(filename), "filename");
+                content.Add(new StringContent(data.file_md5), "file_md5");
+                content.Add(new StringContent(string.Join(",", data.block_list)), "block_list");
+                content.Add(new StringContent(encoding), "file_encoding");
+                content.Add(new StringContent(standard), "standard_name");
+                content.Add(new StringContent(language), "language_code");
+                content.Add(new StringContent(status), "status");
+
+                try
+                {
+                    // Get the response
+                    HttpResponseMessage response = await this.client.PostAsync("upload_block_list", content);
+
+                    // Check the status code for the response
+                    if (response.IsSuccessStatusCode == true)
+                    {
+                        // Get the data and deserialize the content
+                        dr.model = JsonConvert.DeserializeObject<FileDocument>(await response.Content.ReadAsStringAsync());
+                    }
+                    else
+                    {
+                        // Add error data
+                        dr.error = $"UploadBlockList: {filename}. {await response.Content.ReadAsStringAsync()}";
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Add exception data
+                    dr.error = $"UploadBlockList: {filename}. {ex.ToString()}";
+                }
+            }
+
+            // Return the response
+            return dr;
+
+        } // End of the UploadBlockList method
 
         #endregion
 
@@ -268,6 +334,36 @@ namespace Annytab.Doxservr.Client.V1
         #endregion
 
         #region Get methods
+
+        /// <summary>
+        /// Get an url to upload blocks
+        /// </summary>
+        /// <returns>A reference to put block data</returns>
+        public async Task<DoxservrResponse<PutBlockData>> GetUploadUrl()
+        {
+            // Create the response to return
+            DoxservrResponse<PutBlockData> dr = new DoxservrResponse<PutBlockData>();
+
+            // Get an upload url
+            HttpResponseMessage response = await this.client.GetAsync("get_upload_url");
+
+            // Check the status code for the response
+            if (response.IsSuccessStatusCode == true)
+            {
+                // Get data and deserialize the content
+                dr.model = JsonConvert.DeserializeObject<PutBlockData>(await response.Content.ReadAsStringAsync());
+            }
+            else
+            {
+                // Add error data and return
+                dr.error = $"GetUploadUrl. {await response.Content.ReadAsStringAsync()}";
+                return dr;
+            }
+
+            // Return the response
+            return dr;
+
+        } // End of the GetUploadUrl method
 
         /// <summary>
         /// Get a page with file documents

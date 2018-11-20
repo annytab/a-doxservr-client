@@ -7,14 +7,14 @@
     <Company>A Name Not Yet Taken AB</Company>
     <Product>a-doxservr-client</Product>
     <NeutralLanguage>English</NeutralLanguage>
-    <PackageReleaseNotes>I have removed IFilesRepository and added typed http clients instead. Errors are now returned from methods, not logged in the method as before. The caller can decide what to do with the error information.</PackageReleaseNotes>
+    <PackageReleaseNotes>Added methods to upload files block by block, this makes it possible to send large files (&lt;= 4.7 TiB) and to upload blocks in parallel.</PackageReleaseNotes>
     <Copyright>Copyright © 2017</Copyright>
     <PackageIconUrl>http://www.annytab.com/annytab_logo_512x512.png</PackageIconUrl>
     <PackageTags>ASP.NET, .NET, Core, C#, Doxservr, Api, Client</PackageTags>
     <Description>This is a client library for the Doxservr (www.doxservr.com) Api. This library can be used to connect to the Doxservr Api and to call api methods in the Doxservr Api.</Description>
     <PackageProjectUrl>https://github.com/annytab/a-doxservr-client</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/annytab/a-doxservr-client/blob/master/LICENSE</PackageLicenseUrl>
-    <Version>1.0.4</Version>
+    <Version>1.0.5</Version>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
