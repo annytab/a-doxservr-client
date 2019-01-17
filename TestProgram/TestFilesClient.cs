@@ -1,8 +1,10 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -10,7 +12,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Annytab.Doxservr.Client.V1;
-using System.Threading;
 
 namespace TestProgram
 {
@@ -47,8 +48,12 @@ namespace TestProgram
             // Create a service collection
             IServiceCollection services = new ServiceCollection();
 
-            // Add services for logging and for options
-            services.AddLogging();
+            // Add logging and options as services
+            services.AddLogging(logging => {
+                logging.AddConfiguration(configuration.GetSection("Logging"));
+                logging.AddConsole();
+                logging.AddDebug();
+            });
             services.AddOptions();
 
             // Create api options
@@ -56,17 +61,17 @@ namespace TestProgram
             services.Configure<AzureBlobOptions>(configuration.GetSection("AzureBlobOptions"));
 
             // Add repositories
-            services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>();
-            services.AddHttpClient<IAzureBlobsClient, AzureBlobsClient>();
+            services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>().ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate });
+            services.AddHttpClient<IAzureBlobsClient, AzureBlobsClient>().ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate });
 
             // Build a service provider
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            // Configure logging
+            // Configure file logging
             ILoggerFactory loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-            loggerFactory.AddConsole(configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-            loggerFactory.AddFile("Logs/test-{Date}.txt");
+            loggerFactory.AddFile("Logs/log-{Date}.txt");
 
             // Get references
             this.logger = loggerFactory.CreateLogger<IDoxservrFilesClient>();

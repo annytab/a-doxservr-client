@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -36,14 +35,7 @@ namespace Annytab.Doxservr.Client.V1
             this.options = options.Value;
             this.rnd = new Random();
 
-            // Create a http client
-            HttpClientHandler handler = new HttpClientHandler
-            {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.None
-            };
-            this.client = new HttpClient(handler);
-            this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("*"));
+            // Set properties for the client
             this.client.Timeout = TimeSpan.FromSeconds(this.options.TimeoutInSeconds);
 
         } // End of the constructor

@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Extensions.Configuration;
@@ -38,24 +40,27 @@ namespace TestProgram
             // Create a service collection
             IServiceCollection services = new ServiceCollection();
 
-            // Add services for logging and for options
-            services.AddLogging();
+            // Add logging and options as services
+            services.AddLogging(logging => {
+                logging.AddConfiguration(configuration.GetSection("Logging"));
+                logging.AddConsole();
+                logging.AddDebug();
+            });
             services.AddOptions();
 
             // Create api options
             services.Configure<DoxservrOptions>(configuration.GetSection("DoxservrOptions"));
 
-            // Add repositories
-            services.AddHttpClient<IDoxservrAccountsClient, DoxservrAccountsClient>();
+            // Add clients
+            services.AddHttpClient<IDoxservrAccountsClient, DoxservrAccountsClient>().ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate });
 
             // Build a service provider
             IServiceProvider serviceProvider = services.BuildServiceProvider();
 
-            // Configure logging
+            // Configure file logging
             ILoggerFactory loggerFactory = serviceProvider.GetService<ILoggerFactory>();
-            loggerFactory.AddConsole(configuration.GetSection("Logging"));
-            loggerFactory.AddDebug();
-            loggerFactory.AddFile("Logs/test-{Date}.txt");
+            loggerFactory.AddFile("Logs/log-{Date}.txt");
 
             // Get references
             this.logger = loggerFactory.CreateLogger<IDoxservrAccountsClient>();

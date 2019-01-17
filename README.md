@@ -5,17 +5,20 @@ If you want to test the client with the test program, add a appsettings.Developm
 
 This library is available as a NuGet package: <a href="https://www.nuget.org/packages/Annytab.Doxservr.Client/">a-doxservr-client (NuGet Gallery)</a>
 
-You can add DoxservrAccountsClient and DoxservrFilesClient to IHttpClientFactory in ASP.NET Core 2.1. See the TestProgram for examples on how to use clients.
+You can add DoxservrAccountsClient and DoxservrFilesClient to IHttpClientFactory in ASP.NET Core 2.1 or later version. See the TestProgram for examples on how to use clients.
 
 ```
 // Create api options
 services.Configure<DoxservrOptions>(configuration.GetSection("DoxservrOptions"));
 services.Configure<AzureBlobOptions>(configuration.GetSection("AzureBlobOptions"));
 
-// Add repositories
-services.AddHttpClient<IDoxservrAccountsClient, DoxservrAccountsClient>();
-services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>();
-services.AddHttpClient<IAzureBlobsClient, AzureBlobsClient>();
+// Add client
+services.AddHttpClient<IDoxservrAccountsClient, DoxservrAccountsClient>().ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate });
+services.AddHttpClient<IDoxservrFilesClient, DoxservrFilesClient>().ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate });
+services.AddHttpClient<IAzureBlobsClient, AzureBlobsClient>().ConfigurePrimaryHttpMessageHandler(() =>
+                new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate });
 ```
 
 You can also create clients with the constructor by adding a HttpClient and IOptions.

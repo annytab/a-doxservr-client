@@ -1,6 +1,5 @@
 using System;
 using System.Text;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -33,16 +32,9 @@ namespace Annytab.Doxservr.Client.V1
             this.client = http_client;
             this.options = options.Value;
 
-            // Create a http client
-            HttpClientHandler handler = new HttpClientHandler
-            {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.None
-            };
-            this.client = new HttpClient(handler);
+            // Set properties for the client
             this.client.BaseAddress = new Uri(this.options.ApiHost.TrimEnd('/') + "/api/v1/accounts/");
             this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", this.options.ApiEmail, this.options.ApiPassword))));
-            this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("*"));
             this.client.Timeout = TimeSpan.FromSeconds(this.options.TimeoutInSeconds);
 
         } // End of the constructor

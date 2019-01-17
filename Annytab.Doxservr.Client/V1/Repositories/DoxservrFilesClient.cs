@@ -1,15 +1,11 @@
 ﻿using System;
 using System.IO;
 using System.Text;
-using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Threading;
 
 namespace Annytab.Doxservr.Client.V1
 {
@@ -30,24 +26,15 @@ namespace Annytab.Doxservr.Client.V1
         /// <summary>
         /// Create a new repository
         /// </summary>
-        public DoxservrFilesClient(HttpClient client, IOptions<DoxservrOptions> options)
+        public DoxservrFilesClient(HttpClient http_client, IOptions<DoxservrOptions> options)
         {
             // Set values for instance variables
-            this.client = client;
+            this.client = http_client;
             this.options = options.Value;
 
-            // Create a handler
-            HttpClientHandler handler = new HttpClientHandler
-            {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.None
-            };
-
-            // Create a dox client
-            this.client = new HttpClient(handler);
+            // Set properties for the client
             this.client.BaseAddress = new Uri(this.options.ApiHost.TrimEnd('/') + "/api/v1/files/");
             this.client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(UTF8Encoding.UTF8.GetBytes(string.Format("{0}:{1}", this.options.ApiEmail, this.options.ApiPassword))));
-            this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("gzip"));
-            this.client.DefaultRequestHeaders.AcceptEncoding.Add(new StringWithQualityHeaderValue("*"));
             this.client.Timeout = TimeSpan.FromSeconds(this.options.TimeoutInSeconds);
 
         } // End of the constructor
