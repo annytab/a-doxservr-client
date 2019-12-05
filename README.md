@@ -43,5 +43,5 @@ IDoxservrFilesClient files_client = new DoxservrFilesClient(this.client_factory.
 IAzureBlobsClient azure_client = new AzureBlobsClient(this.client_factory.CreateClient(), azure_options);
 ```
 
-Documentation (English): <a href="https://www.doxservr.com/home/api">Doxservr Api</a><br />
-Documentation (Swedish): <a href="https://www.doxservr.se/home/api">Doxservr Api</a>
+Documentation (English): <a href="https://www.doxservr.com/home/api">Doxservr API</a><br />
+Documentation (Swedish): <a href="https://www.doxservr.se/home/api">Doxservr API</a>
